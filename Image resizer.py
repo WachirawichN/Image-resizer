@@ -1,14 +1,37 @@
-import tkinter
-from tkinter import filedialog
-import cv2
-from pathlib import Path
+#Library
+import tkinter                  #UI library
+from tkinter import filedialog  
+import cv2                      #For resizing image
+from pathlib import Path        #Path library
 
 
+#Varible
+#List all the format that opencv support
+supportedFormat = ["*.bmp", "*.dib",
+                   "*.jpeg", "*.jpg", "*.jpe",
+                   ".jp2",
+                   "*.png",
+                   "*.webp",
+                   "*.avif",
+                   "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm",
+                   "*.pfm",
+                   "*.sr", "*.ras",
+                   "*.tiff", "*.tif",
+                   "*.exr",
+                   "*.hdr", "*.pic"]
+#Default input/output path
+inputFolder = Path(__file__).parent
+outputFolder = Path(__file__).parent
+
+
+#UI functions
 def selectInputFolder():
     global inputFolder
     inputFolder = Path(filedialog.askdirectory(initialdir=Path(__file__).parent))
     inputFolderName.config(text="Input folder: " + str(inputFolder))
-    imageCount = len(list(inputFolder.glob("*.*")))
+    imageCount = 0
+    for extension in supportedFormat:
+        imageCount += len(list(inputFolder.glob(extension)))
     totalImage.config(text="Total image: " + str(imageCount))
     
 def selectOuputFolder():
@@ -18,7 +41,9 @@ def selectOuputFolder():
 
 def imageConversion():
     if inputFolder != None:
-        images = inputFolder.glob("*.*")
+        images = []
+        for extenstion in supportedFormat:
+            images.extend(inputFolder.glob(extenstion))
         for image in images:
             outputName = str(Path.joinpath(outputFolder, Path(image).name + ".jpg"))
             image = cv2.imread(str(image))
@@ -26,16 +51,15 @@ def imageConversion():
             cv2.imwrite(outputName, image)
 
 
+#UI
 window = tkinter.Tk()
 window.title("Image resizer")
-window.geometry("300x150")
+window.geometry("350x150")
 
-inputFolder = Path(__file__).parent
 inputFolderButton = tkinter.Button(window,
                                    text="Select input folder",
                                    width=20,
                                    command=selectInputFolder)
-outputFolder = Path(__file__).parent
 outputFolderButton = tkinter.Button(window,
                                     text="Select output folder",
                                     width=20,
@@ -55,13 +79,11 @@ outputFolderName = tkinter.Label(window,
                                  text="Output folder: " + str(outputFolder),
                                  width=100)
 
-
 inputFolderButton.pack()
 outputFolderButton.pack()
 startCoversion.pack()
 inputFolderName.pack()
 totalImage.pack()
 outputFolderName.pack()
-
 
 window.mainloop()
